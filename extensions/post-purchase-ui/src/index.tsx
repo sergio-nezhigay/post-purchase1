@@ -1,12 +1,3 @@
-/**
- * Extend Shopify Checkout with a custom Post Purchase user experience.
- * This template provides two extension points:
- *
- *  1. ShouldRender - Called first, during the checkout process, when the
- *     payment page loads.
- *  2. Render - If requested by `ShouldRender`, will be rendered after checkout
- *     completes
- */
 import React from "react";
 
 import {
@@ -30,41 +21,29 @@ import {
  * optionally allows data to be stored on the client for use in the `Render`
  * extension point.
  */
-extend("Checkout::PostPurchase::ShouldRender", async ({ storage }) => {
-  console.log(`logCheckout::PostPurchase::ShouldRender`);
-  console.error(`errorCheckout::PostPurchase::ShouldRender`);
-  const initialState = await getRenderData();
-  const render = true;
+extend(
+  "Checkout::PostPurchase::ShouldRender",
+  async ({ storage, inputData }) => {
+    console.log("logCheckout::PostPurchase::ShouldRender");
 
-  if (render) {
-    // Saves initial state, provided to `Render` via `storage.initialData`
-    await storage.update(initialState);
+    // Prepare initial state with a test value
+
+    const render = true;
+
+    return {
+      render,
+    };
   }
+);
 
-  return {
-    render,
-  };
-});
-
-// Simulate results of network call, etc.
-async function getRenderData() {
-  return {
-    couldBe: "anything",
-  };
-}
-
-/**
- * Entry point for the `Render` Extension Point
- *
- * Returns markup composed of remote UI components.  The Render extension can
- * optionally make use of data stored during `ShouldRender` extension point to
- * expedite time-to-first-meaningful-paint.
- */
+// Entry point for the `Render` Extension Point
 render("Checkout::PostPurchase::Render", App);
 
 // Top-level React component
-export function App({ extensionPoint, storage }) {
-  const initialState = storage.initialData;
+export function App({ extensionPoint, storage, inputData }) {
+  //inputData : {"referenceId":"87bfea99e46c032aaeb9d2906fdde5f7","customerId":7216001450157,"destinationCountryCode":"UA","totalPriceSet":{"shopMoney":{"amount":"230.0","currencyCode":"UAH"},"presentmentMoney":{"amount":"230.0","currencyCode":"UAH"}},"lineItems":[{"totalPriceSet":{"shopMoney":{"amount":"230.0","currencyCode":"UAH"},"presentmentMoney":{"amount":"230.0","currencyCode":"UAH"}},"quantity":1,"product":{"id":7790684962989,"title":"DC 12V Power Bank1я планшета Micr1111osof11t Surfac11e Pr11o3 P1111o1","variant":{"id":43437517144237,"title":"Default Title","metafields":[]},"metafields":[]},"sellingPlanId":null}]}
+
+  //  update some customer info, like dummy email into shopify, using api.
 
   return (
     <BlockStack spacing="loose">
@@ -86,24 +65,30 @@ export function App({ extensionPoint, storage }) {
         <View />
         <BlockStack spacing="xloose">
           <TextContainer>
-            <Heading>Post1-purchase extension</Heading>
+            <Heading>Post-purchase extension</Heading>
             <TextBlock>
-              Here1 you can cross-sell other products, request a product review
+              Here you can cross-sell other products, request a product review
               based on a previous purchase, and much more.
+            </TextBlock>
+
+            <TextBlock>
+              inputData : {JSON.stringify(inputData?.initialPurchase)}
+            </TextBlock>
+            <TextBlock>
+              extensionPoint : {JSON.stringify(extensionPoint)}
             </TextBlock>
           </TextContainer>
           <Button
             submit
             onPress={() => {
               // eslint-disable-next-line no-console
-              console.log(`logExtension point ${extensionPoint}`, initialState);
-              console.error(
-                `errorExtension point ${extensionPoint}`,
-                initialState
+              console.log(
+                `logExtension point ${extensionPoint}`,
+                storage.initialData
               );
             }}
           >
-            Primary button1
+            Primary button
           </Button>
         </BlockStack>
       </Layout>
